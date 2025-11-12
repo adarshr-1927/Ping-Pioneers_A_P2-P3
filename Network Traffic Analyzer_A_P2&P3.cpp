@@ -9,21 +9,17 @@
 
 using namespace std;
 
-// Counters
 int total_packets = 0;
 int tcp_count = 0;
 int udp_count = 0;
 int icmp_count = 0;
 int other_count = 0;
 
-// Top talkers (source IPs)
 map<string, int> src_ips;
 
-// Callback function for each captured packet
 void packet_handler(u_char *userData, const struct pcap_pkthdr *header, const u_char *packet) {
     total_packets++;
 
-    // Skip Ethernet header (14 bytes)
     const struct ip ip_header = (struct ip)(packet + 14);
     int ip_header_len = ip_header->ip_hl * 4;
     string src_ip = inet_ntoa(ip_header->ip_src);
@@ -57,7 +53,6 @@ int main() {
     char errbuf[PCAP_ERRBUF_SIZE];
     pcap_if_t *alldevs, *device;
 
-    // List all available network devices
     if (pcap_findalldevs(&alldevs, errbuf) == -1) {
         cerr << "Error finding devices: " << errbuf << endl;
         return 1;
@@ -91,7 +86,6 @@ int main() {
 
     cout << "Starting capture on " << device->name << "...\n";
 
-    // Open the selected device
     pcap_t *handle = pcap_open_live(device->name, BUFSIZ, 1, 1000, errbuf);
     if (!handle) {
         cerr << "Could not open device " << device->name << ": " << errbuf << endl;
@@ -100,10 +94,9 @@ int main() {
 
     cout << "Capturing packets... (Press Ctrl+C to stop)\n\n";
 
-    // Capture packets (count 0 = infinite)
+
     pcap_loop(handle, 0, packet_handler, NULL);
 
-    // Close the session
     pcap_close(handle);
 
     cout << "\n==== Capture Summary ====\n";
@@ -119,4 +112,5 @@ int main() {
 
     pcap_freealldevs(alldevs);
     return 0;
+
 }
